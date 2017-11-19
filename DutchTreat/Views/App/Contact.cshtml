@@ -1,0 +1,43 @@
+﻿<!-- With the model tag I can bind my viewmodel class to the form -->
+@model ContactViewModel
+@{ 
+    ViewBag.Title = "Contact Us";
+}
+<!-- To enable client-side validation, add the two jquery-validation packages to the bower file and add the according scripts to the website -->
+<!-- The section 'scripts' is defined as placeholder in the _Layout.cshtml file -->
+@section scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+<form method="post">
+    <!-- Show all validation messages at the top of the form -->
+    <!--<div asp-validation-summary="All"></div>-->    
+    <!-- Show all validation messages, coming from the binded model, at the top of the form -->
+    <div asp-validation-summary="ModelOnly"></div>
+    <!-- Instead of name property on the input tags, I can use the asp-for tag, which automatically suggests a property from the binded model -->
+    <!-- Good practice: Set asp-for tag also on labels. When user clicks on label, the according input field gets in focus -->
+    <label asp-for="Name">Your Name:</label>
+    <br />
+    <input asp-for="Name"/>
+    <!-- Show validation next to the according fields -->
+    <span asp-validation-for="Name"></span>
+    <br />
+    <label asp-for="Email">Email:</label>
+    <br />
+    <input type="email" asp-for="Email"/>
+    <span asp-validation-for="Email"></span>
+    <br />
+    <label asp-for="Subject">Subject:</label>
+    <br />
+    <input type="text" asp-for="Subject" />
+    <span asp-validation-for="Subject"></span>
+    <br />
+    <label asp-for="Message">Message:</label>
+    <br />
+    <textarea rows="4" asp-for="Message"></textarea>
+    <span asp-validation-for="Message"></span>
+    <br />
+    <input type="submit" value="Send Message" />
+    <br />
+    @ViewBag.UserMessage
+</form>

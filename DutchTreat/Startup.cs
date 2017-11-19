@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using DutchTreat.Services;
 
 namespace DutchTreat
 {
@@ -15,6 +16,17 @@ namespace DutchTreat
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // You can add three different types of services
+            // - AddTransient: No data on themselves; often methods, which just do things; Lightweight
+            // - AddScoped: They are kept for the length of the connection
+            // - AddSingleton: Services created once and are kept for the lifetime of the server running
+            // Dependency Injection: Define interface and concrete implementation of the service;
+            // In this case: When a mailservice is needed, take the concrete implementation (NullMailService) defined here;
+            // NullMailService on the otherhand requires a logger. Also here a default implementation is known and does not need to
+            // be specified here.
+            services.AddTransient<IMailService, NullMailService>(); 
+            // TODO: Support for real mail service
+
             // ASP.NET Core requires Dependency Injection
             // Here we use the default microsoft provider for dependency injection
             services.AddMvc(); // Injects all services the MVC subsystem needs
@@ -24,10 +36,17 @@ namespace DutchTreat
         // How should be listen for webrequests
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
+            if (env.IsDevelopment())
+            {
+                // Show exceptions in the browser window when in development
+                // Environment can be configured in the project propeties -> debug
+                app.UseDeveloperExceptionPage();
+            } else
+            {
+                // show actual error page on exceptions
+                app.UseExceptionHandler("/error");
+
+            }
 
             // Lamda: Anytime a request comes in, write hello world
             //app.Run(async (context) =>
