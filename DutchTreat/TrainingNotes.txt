@@ -31,3 +31,13 @@ ASP.NET MVC convention
    - Razor is a syntax for generating/replacing/adding small amount of view logic in
      html with C#
 - ASP.NET Core requires Dependency Injection
+
+---------------------------------------------------------------------------------------
+Bootstrap
+---------------------------------------------------------------------------------------
+- Open Source Framework for Web Apps
+- Based on CSS and langugae LESS (procedural version of CSS)
+- Has javascript components to handle things HTML has not built-in
+- Support of common metaphors such as handling forms, model windows, navigation systems, tabs, buttons, ...
+- Adding bootstrap to the project
+	- add bootstrap to the bower file

@@ -5,30 +5,47 @@
     <meta charset="utf-8" />
     <!-- The title is fetched from the according .cshtml file -->
     <title>Dutch Treat: @ViewBag.Title</title>
+    <!-- Order of css files matters. The bootstrap css is loaded in first, so we can overwrite the default with our own css file. -->
     <!-- In razor you use ~/ for directing to the wwwroot folder -->
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
     <link href="~/css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <header>
-        <h1>Welcome to Dutch Treat</h1>
-        <menu>
-            <ul>
-                <!--Instead of href links use helper tags, which had bean loaded in the MVC View Imports Page
-                This ensures when moving around the views, they can be still found-->
-                <li><a asp-controller="App" asp-action="Index">Home</a></li>
-                <li><a asp-controller="App" asp-action="Contact">Contact</a></li>
-                <li><a asp-controller="App" asp-action="About">About</a></li>
-            </ul>
-        </menu>
-    </header>
-    <section>
-        <h2>@ViewBag.Title</h2>
+    <div class="navbar navbar-inverse"> <!-- -->
+        <header class="container">
+            <div class="navbar-header"> <!-- Define the header of the navbar, so it stays above the collapsed menu-->
+                <div class="navbar-brand">
+                    <!--<i class="glyphicon glyphicon-apple">Dutch Treat</i>--><!-- Bootstrap icon -->
+                    <i class="fa fa-paint-brush"></i>Dutch Treat <!-- Font awesome icon -->
+                </div>
+                <button class="navbar-toggle" data-toggle="collapse" data-target="#menu">&#9776;</button> <!-- toggle the menu part behind a button, when not enough space -->
+            </div>
+            <div id="menu" class="collapse navbar-collapse"> <!-- define menu -->
+                <ul class="nav navbar-nav">
+                    <!-- Instead of href links use helper tags, which had bean loaded in the MVC View Imports Page
+                        This ensures when moving around the views, they can be still found -->
+                    <li><a asp-controller="App" asp-action="Index">Home</a></li>
+                    <li><a asp-controller="App" asp-action="Contact">Contact</a></li>
+                    <li><a asp-controller="App" asp-action="About">About</a></li>
+                </ul>
+            </div>
+        </header>
+    </div>
+    
+    <section class="container">
+        <h2 class="text-center">@ViewBag.Title</h2>
         <!-- Body of a .cshtml file is replacing the following renderbody function -->
         @RenderBody()
     </section>
-    <footer>Copyright 2017 Dutch Treat LLC</footer>
+    
+    <footer class="container">
+        <div class="text-center">Copyright 2017 Dutch Treat LLC</div>
+    </footer>
 
-    <script src="~/lib/jQuery/dist/jquery.min.js"></script>
+    <!-- Order of loading js files matters. the bootstrap js requires jquery.-->
+    <script src="~/lib/jQuery/dist/jquery.min.js"></script>    
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="~/js/index.js"></script>
     <!-- The following is a placeholder for scripts, which are required for specific sites; e.g. Contact.cshtml site-->
     @RenderSection("scripts", false)

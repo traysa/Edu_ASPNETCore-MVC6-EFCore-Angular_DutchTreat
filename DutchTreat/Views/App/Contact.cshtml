@@ -9,35 +9,42 @@
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }
-<form method="post">
-    <!-- Show all validation messages at the top of the form -->
-    <!--<div asp-validation-summary="All"></div>-->    
-    <!-- Show all validation messages, coming from the binded model, at the top of the form -->
-    <div asp-validation-summary="ModelOnly"></div>
-    <!-- Instead of name property on the input tags, I can use the asp-for tag, which automatically suggests a property from the binded model -->
-    <!-- Good practice: Set asp-for tag also on labels. When user clicks on label, the according input field gets in focus -->
-    <label asp-for="Name">Your Name:</label>
-    <br />
-    <input asp-for="Name"/>
-    <!-- Show validation next to the according fields -->
-    <span asp-validation-for="Name"></span>
-    <br />
-    <label asp-for="Email">Email:</label>
-    <br />
-    <input type="email" asp-for="Email"/>
-    <span asp-validation-for="Email"></span>
-    <br />
-    <label asp-for="Subject">Subject:</label>
-    <br />
-    <input type="text" asp-for="Subject" />
-    <span asp-validation-for="Subject"></span>
-    <br />
-    <label asp-for="Message">Message:</label>
-    <br />
-    <textarea rows="4" asp-for="Message"></textarea>
-    <span asp-validation-for="Message"></span>
-    <br />
-    <input type="submit" value="Send Message" />
-    <br />
-    @ViewBag.UserMessage
-</form>
+<div class="col-md-6 col-md-offset-3"> <!-- puts the form in the middle (in a 12 column grid) -->
+    <div class="well"> <!-- puts the form into a light-grey box-->
+        <form method="post">
+            <!-- Show all validation messages at the top of the form -->
+            <!--<div asp-validation-summary="All"></div>-->
+            <!-- Show all validation messages, coming from the binded model, at the top of the form -->
+            <div asp-validation-summary="ModelOnly"></div>
+            <!-- Instead of name property on the input tags, I can use the asp-for tag, which automatically suggests a property from the binded model -->
+            <!-- Good practice: Set asp-for tag also on labels. When user clicks on label, the according input field gets in focus -->
+            <div class="form-group">
+                <label asp-for="Name">Your Name:</label>
+                <input asp-for="Name" class="form-control"/> <!-- form control stretches the input field the surrounding div -->
+                <!-- Show validation next to the according fields -->
+                <span asp-validation-for="Name" class="text-danger"></span> <!-- colour validation text in red with text-danger -->
+            </div>
+            <div class="form-group">
+                <label asp-for="Email">Email:</label>
+                <input type="email" asp-for="Email" class="form-control"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Subject">Subject:</label>
+                <input type="text" asp-for="Subject" class="form-control"/>
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Message">Message:</label>
+                <textarea rows="4" asp-for="Message" class="form-control"></textarea>
+                <span asp-validation-for="Message" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg"> <!-- bootstrap button with one out of six standard color schemes called 'primary' -->
+                    <i class="fa fa-envelope"></i> Send Message <!-- By using the button instead of the input tag, you can write the value incl. a leading font awesome icon within the tag -->
+                </button>
+                <div class="text-success">@ViewBag.UserMessage</div> <!-- colour validation text in green with text-success -->
+            </div>
+        </form>
+    </div>
+</div>
