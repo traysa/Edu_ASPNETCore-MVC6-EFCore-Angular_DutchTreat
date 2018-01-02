@@ -41,3 +41,30 @@ Bootstrap
 - Support of common metaphors such as handling forms, model windows, navigation systems, tabs, buttons, ...
 - Adding bootstrap to the project
 	- add bootstrap to the bower file
+
+---------------------------------------------------------------------------------------
+Entity Framework Core
+---------------------------------------------------------------------------------------
+- Complete re-write of the original Entity Framework
+	- Now the Entity Framework is not binded to only Relational DBs
+- Open Source Framework
+- EF6 is more mature than EF Core
+	- EF6 requires desktop .NET 4.x
+- Creating entities
+	- Classes, which define the shape of the data we want to store in the DB
+- Creating a db context
+	- Via the context class the properties are defined which allows to querry entities in the DB table (get and add)
+- EF Core Tooling
+	- Can be added via a nuget package in the .csproj file
+	- After saving the .csproj file the NuGet package is stored and the ef tools can be used (write "dotnet ef" in cmd)
+	- It is required to tell the db context (DutchContext.cs), which DB provider and connection string to use
+	- With the command "dotnet ef database update" a databse should be created matching the db context in the project (DutchContext.cs)
+	- With the command "dotnet ef migrations add <Name>" a migration file is created, which contains the code, which is actually adding new tables to the empty db when executing "dotnet ef database update"
+
+---------------------------------------------------------------------------------------
+Configuration files
+---------------------------------------------------------------------------------------
+- In the Programm.cs the WebHost.CreateDefaultBuilder would create a default configuration file
+- To define own configuration files a delegate can be added via WebHost.ConfigureAppConfiguration(<Config Delegate>)
+- In the Config Delegate the different configuration files can be defined
+- There are predefined configuration keys like "ConnectionStrings" or "Logging"

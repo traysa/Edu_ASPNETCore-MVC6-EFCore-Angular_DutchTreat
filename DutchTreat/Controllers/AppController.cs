@@ -1,4 +1,5 @@
-﻿using DutchTreat.Services;
+﻿using DutchTreat.Data;
+using DutchTreat.Services;
 using DutchTreat.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,13 +13,15 @@ namespace DutchTreat.Controllers
     public class AppController : Controller
     {
         private readonly IMailService _mailService;
+        public IDutchRepository _repository;
 
         // Contructor
         // Requirement for the AppController is to know the a mail service for one of its methods; Therefore we inject a mailservice
         // Asking dependency injection layer to construct one of these mail services; This is done and handled in Startup.cs
-        public AppController(IMailService mailService)
+        public AppController(IMailService mailService, IDutchRepository repository)
         {
             _mailService = mailService;
+            _repository = repository;
         }
 
         // Create an action, which contains the logic
@@ -74,6 +77,30 @@ namespace DutchTreat.Controllers
         {
             ViewBag.Title = "About us";
             return View();
+        }
+
+        /// <summary>
+        /// Shopping page for users
+        /// </summary>
+        /// <returns>A view with all products</returns>
+        public IActionResult Shop()
+        {
+            // Fluent syntax
+            //var results = _context.Products
+            //    .OrderBy(p => p.Category)
+            //    .ToList();
+            //return View(results);
+
+            // LINQ querry
+            //var results = from p in _context.Products
+            //              orderby p.Category
+            //              select p;
+            //// Passing data to the view
+            //return View(results.ToList());
+
+            // Repository
+            var results = _repository.GetAllProducts();
+            return View(results);
         }
     }
 }

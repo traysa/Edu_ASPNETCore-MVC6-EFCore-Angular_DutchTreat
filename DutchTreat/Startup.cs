@@ -7,15 +7,37 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using DutchTreat.Services;
+using DutchTreat.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace DutchTreat
 {
     public class Startup
     {
+        private readonly IConfiguration _config;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="config"></param>
+        public Startup(IConfiguration config)
+        {
+            _config = config;
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Register the db context as service in the service collection, so it can be injected into different services needed (e.g. inside a controller)
+            // The DB provider is given via a configuration lambda
+            services.AddDbContext<DutchContext>(cfg =>
+            {
+                // The provider is given in a configuration file, which has been registered in Program.cs
+                cfg.UseSqlServer(_config.GetConnectionString("DutchConnectionString")); // Different databases can be added by other packages
+            });
+
             // You can add three different types of services
             // - AddTransient: No data on themselves; often methods, which just do things; Lightweight
             // - AddScoped: They are kept for the length of the connection
@@ -24,8 +46,15 @@ namespace DutchTreat
             // In this case: When a mailservice is needed, take the concrete implementation (NullMailService) defined here;
             // NullMailService on the otherhand requires a logger. Also here a default implementation is known and does not need to
             // be specified here.
-            services.AddTransient<IMailService, NullMailService>(); 
+            services.AddTransient<IMailService, NullMailService>();
             // TODO: Support for real mail service
+
+            // Call data seeder for database
+            services.AddTransient<DutchSeeder>();
+
+            // 
+            services.AddScoped<IDutchRepository, DutchRepository>();
+            //services.AddScoped<IDutchRepository, MockDutchRepository>();
 
             // ASP.NET Core requires Dependency Injection
             // Here we use the default microsoft provider for dependency injection
@@ -74,6 +103,17 @@ namespace DutchTreat
                     "{controller}/{action}/{id?}", // Template with placeholders
                     new { controller = "App", Action = "Index" }); // Controllers
             });
+
+            if (env.IsDevelopment())
+            {
+                // Seed the Database
+                // Requires a scope in EF Core 2 to get the Dutch Context
+                using (var scope = app.ApplicationServices.CreateScope())
+                {
+                    var seeder = scope.ServiceProvider.GetService<DutchSeeder>();
+                    seeder.Seed();
+                }
+            }
         }
     }
 }

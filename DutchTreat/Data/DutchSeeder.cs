@@ -1,0 +1,58 @@
+﻿using DutchTreat.Data.Entities;
+using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace DutchTreat.Data
+{
+    public class DutchSeeder
+    {
+        private readonly DutchContext _ctx;
+        private readonly IHostingEnvironment _hosting;
+
+        public DutchSeeder(DutchContext ctx, IHostingEnvironment hosting)
+        {
+            _ctx = ctx;
+            _hosting = hosting;
+        }
+
+        // Initialize database with some data
+        public void Seed()
+        {
+            // Check if database exists
+            _ctx.Database.EnsureCreated();
+
+            // If there are no products in the database, create some default products
+            // and a sample order
+            if (!_ctx.Products.Any())
+            {
+                // Need to create sample data
+                var filepath = Path.Combine(_hosting.ContentRootPath, "Data/art.json");
+                var json = File.ReadAllText(filepath);
+                var products = JsonConvert.DeserializeObject<IEnumerable<Product>>(json);
+                _ctx.Products.AddRange(products);
+                
+                var order = new Order()
+                {
+                    OrderDate = DateTime.Now,
+                    OrderNumber = "12345",
+                    Items = new List<OrderItem>()
+                    {
+                        new OrderItem(){
+                            Product = products.First(),
+                            Quantity = 5,
+                            UnitPrice = products.First().Price
+                        }
+                    }
+                };
+
+                _ctx.Orders.Add(order);
+                _ctx.SaveChanges();
+            }
+        }
+    }
+}
