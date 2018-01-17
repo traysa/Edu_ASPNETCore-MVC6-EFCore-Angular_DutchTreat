@@ -13,7 +13,7 @@ namespace DutchTreat.Controllers
     public class AppController : Controller
     {
         private readonly IMailService _mailService;
-        public IDutchRepository _repository;
+        private readonly IDutchRepository _repository;
 
         // Contructor
         // Requirement for the AppController is to know the a mail service for one of its methods; Therefore we inject a mailservice

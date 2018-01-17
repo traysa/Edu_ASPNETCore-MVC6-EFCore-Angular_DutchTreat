@@ -22,6 +22,10 @@ ASP.NET MVC convention
 ---------------------------------------------------------------------------------------
 - In a controller class (e.g. "AppController") you provide actions (e.g. "Index") via
   methods, which can return a view
+	- View Controllers are the API
+	- View Controllers allow simple URI mapping via annotations
+	- In View Controllers you work with status codes
+	- In View Controllers you differentiate actions via REST verbs
 - How does it know which view to call?
   - It is looked into the "Views" folder for an folder, which is named after the 
 	controller (in this case "App")
@@ -31,6 +35,13 @@ ASP.NET MVC convention
    - Razor is a syntax for generating/replacing/adding small amount of view logic in
      html with C#
 - ASP.NET Core requires Dependency Injection
+
+---------------------------------------------------------------------------------------
+View Models / Model Binding
+---------------------------------------------------------------------------------------
+- Bind form input to C# classes
+- Allows to use validation annotation for the input data (e.g. OrderViewModel.cs)
+- In the controllers (e.g. in AppController.cs), MVC will map the names of the form fields to the property of the given View Model class instead of a generell object class 
 
 ---------------------------------------------------------------------------------------
 Bootstrap
@@ -68,3 +79,15 @@ Configuration files
 - To define own configuration files a delegate can be added via WebHost.ConfigureAppConfiguration(<Config Delegate>)
 - In the Config Delegate the different configuration files can be defined
 - There are predefined configuration keys like "ConnectionStrings" or "Logging"
+
+---------------------------------------------------------------------------------------
+AutoMapper
+---------------------------------------------------------------------------------------
+- NuGet Package "AutoMapper"
+- Tool to map types in a conventional way
+- Similar tools are existing
+- Since ASP.NET Core is used, we also need the NuGet Package "AutoMapper.Extensions.Microsoft.DependencyInjection",
+	which is a Wrapper to allow dependency injection to deal with AutoMapper in ASP.NET Core in a smart way
+- Add AutoMapper support by adding it to the Service Collection i the Startup.cs
+- Create Mapping Profile (e.g. DutschMappingProfile.cs) to define mapping
+- Use mapping in the controller (e.g. OrdersController) to map between entities and their according view models

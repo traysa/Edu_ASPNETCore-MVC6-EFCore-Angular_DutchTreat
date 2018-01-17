@@ -10,6 +10,8 @@ using DutchTreat.Services;
 using DutchTreat.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using AutoMapper;
 
 namespace DutchTreat
 {
@@ -38,6 +40,11 @@ namespace DutchTreat
                 cfg.UseSqlServer(_config.GetConnectionString("DutchConnectionString")); // Different databases can be added by other packages
             });
 
+            // Add AutoMapper support
+            // AddAutoMapper comes from the NuGet Package "AutoMapper.Extensions.Microsoft.DependencyInjection"
+            // Required to define mapping, otherwise the following error appears: "Unmapped members were found."
+            services.AddAutoMapper(); 
+
             // You can add three different types of services
             // - AddTransient: No data on themselves; often methods, which just do things; Lightweight
             // - AddScoped: They are kept for the length of the connection
@@ -58,7 +65,8 @@ namespace DutchTreat
 
             // ASP.NET Core requires Dependency Injection
             // Here we use the default microsoft provider for dependency injection
-            services.AddMvc(); // Injects all services the MVC subsystem needs
+            services.AddMvc() // Injects all services the MVC subsystem needs
+                .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore); // Trims off self-referencing objects, like produced in the GetAllOrders method in the DutchReporsitory called in the OrderControllers
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,4 +1,5 @@
 ﻿using DutchTreat.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,31 @@ namespace DutchTreat.Data
             _logger = logger;
         }
 
+        // Save an entity to the db
+        public void AddEntity(object model)
+        {
+            _ctx.Add(model);
+        }
+
+        public IEnumerable<Order> GetAllOrders(bool includeitems)
+        {
+            if (includeitems)
+            {
+                return _ctx.Orders
+                        .Include(o => o.Items) // Includes items of the order
+                        .ThenInclude(i => i.Product) // Includes product of the items
+                        .ToList();
+                // To not get the following error: "Self referencing loop detected for property 'order'"
+                // add Json options in services.AddMvc() in the configuration services in Startup.cs.
+
+            }
+            else
+            {
+                return _ctx.Orders.ToList(); //Return orders but without items they contain
+
+            }
+        }
+
         public IEnumerable<Product> GetAllProducts()
         {
             try
@@ -41,6 +67,15 @@ namespace DutchTreat.Data
                 _logger.LogError("Failed to get all products: {ex}");
                 return null;
             }
+        }
+
+        public Order GetOrderById(int id)
+        {
+            return _ctx.Orders
+                        .Include(o => o.Items) // Includes items of the order
+                        .ThenInclude(i => i.Product) // Includes product of the items
+                        .Where(o => o.Id == id) // Get specific order
+                        .FirstOrDefault();
         }
 
         public IEnumerable<Product> GetProductsByCategory(string category)
