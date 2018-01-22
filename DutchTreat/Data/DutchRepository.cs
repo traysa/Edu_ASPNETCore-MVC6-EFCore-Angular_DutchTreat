@@ -53,6 +53,28 @@ namespace DutchTreat.Data
             }
         }
 
+        public IEnumerable<Order> GetAllOrdersByUser(string username, bool includeitems)
+        {
+            if (includeitems)
+            {
+                return _ctx.Orders
+                        .Where(o => o.User.UserName == username) // Only orders from a specific user
+                        .Include(o => o.Items) // Includes items of the order
+                        .ThenInclude(i => i.Product) // Includes product of the items
+                        .ToList();
+                // To not get the following error: "Self referencing loop detected for property 'order'"
+                // add Json options in services.AddMvc() in the configuration services in Startup.cs.
+
+            }
+            else
+            {
+                return _ctx.Orders
+                        .Where(o => o.User.UserName == username)
+                        .ToList(); //Return orders but without items they contain
+
+            }
+        }
+
         public IEnumerable<Product> GetAllProducts()
         {
             try
@@ -69,13 +91,14 @@ namespace DutchTreat.Data
             }
         }
 
-        public Order GetOrderById(int id)
+        public Order GetOrderById(string username, int id)
         {
             return _ctx.Orders
                         .Include(o => o.Items) // Includes items of the order
                         .ThenInclude(i => i.Product) // Includes product of the items
-                        .Where(o => o.Id == id) // Get specific order
+                        .Where(o => o.Id == id && o.User.UserName == username) // Get specific order for specific user
                         .FirstOrDefault();
+            // returns nulls if id does not belong to user
         }
 
         public IEnumerable<Product> GetProductsByCategory(string category)

@@ -2,6 +2,8 @@
 using DutchTreat.Data;
 using DutchTreat.Data.Entities;
 using DutchTreat.ViewModels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,6 +16,7 @@ namespace DutchTreat.Controllers
     // Subcontroller of Orders
     // Since {orderId} is in the route it must be a parameter
     [Route("/api/orders/{orderid}/items")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // No cookies used, only JWT; therefore no redirection to Login page happens on API, instead 401 status error
     public class OrderItemsController : Controller
     {
         private readonly IDutchRepository _repository;
@@ -30,7 +33,8 @@ namespace DutchTreat.Controllers
         [HttpGet]
         public IActionResult Get(int orderId)
         {
-            var order = _repository.GetOrderById(orderId);
+            // Since this controller required authorization, the user is known
+            var order = _repository.GetOrderById(User.Identity.Name, orderId);
             if (order != null)
                 return Ok(_mapper.Map<IEnumerable<OrderItem>,IEnumerable<OrderItemViewModel>>(order.Items));
             return NotFound();
@@ -41,7 +45,8 @@ namespace DutchTreat.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int orderId, int id)
         {
-            var order = _repository.GetOrderById(orderId);
+            // Since this controller required authorization, the user is known
+            var order = _repository.GetOrderById(User.Identity.Name, orderId);
             if (order != null)
             {
                 var item = order.Items.Where(i => i.Id == id).FirstOrDefault();

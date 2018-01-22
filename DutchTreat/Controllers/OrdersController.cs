@@ -8,22 +8,31 @@ using DutchTreat.Data.Entities;
 using Microsoft.Extensions.Logging;
 using DutchTreat.ViewModels;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 
 namespace DutchTreat.Controllers
 {
     [Route("api/[Controller]")]
+    [Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)] // No cookies used, only JWT; therefore no redirection to Login page happens on API, instead 401 status error
     public class OrdersController : Controller
     {
         private readonly IDutchRepository _repository;
         private readonly ILogger<OrdersController> _logger;
         private readonly IMapper _mapper;
+        private readonly UserManager<StoreUser> _userManager;
 
         // Constructor, which injects the repository-, logger- and mapper-service
-        public OrdersController(IDutchRepository repository, ILogger<OrdersController> logger, IMapper mapper)
+        public OrdersController(IDutchRepository repository, 
+            ILogger<OrdersController> logger, 
+            IMapper mapper,
+            UserManager<StoreUser> userManager)
         {
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -31,14 +40,24 @@ namespace DutchTreat.Controllers
         {
             try
             {
+                // Since this controller required authorization, the user is known
+                var username = User.Identity.Name;
+
                 // Without AutoMapper Service
                 //return Ok(_repository.GetAllOrders());
+                
                 // With AutoMapper Service: Take the order and map it to the OrderViewModel
                 //return Ok(_mapper.Map<IEnumerable<Order>, IEnumerable<OrderViewModel>>(_repository.GetAllOrders()));
+                
                 // With AutoMapper Service: Take the order and map it to the OrderViewModel
-                var results = _repository.GetAllOrders(includeitems);
-                return Ok(_mapper.Map<IEnumerable<Order>, IEnumerable<OrderViewModel>>(results));
+                //var results = _repository.GetAllOrders(includeitems);
+                //return Ok(_mapper.Map<IEnumerable<Order>, IEnumerable<OrderViewModel>>(results));
+                
+                //
+                var results = _repository.GetAllOrdersByUser(username,includeitems);
 
+
+                return Ok(_mapper.Map<IEnumerable<Order>, IEnumerable<OrderViewModel>>(results));
             }
             catch (Exception ex)
             {
@@ -52,7 +71,8 @@ namespace DutchTreat.Controllers
         {
             try
             {
-                var order = _repository.GetOrderById(id);
+                // Since this controller required authorization, the user is known
+                var order = _repository.GetOrderById(User.Identity.Name,id);
                 if (order != null)
                     // Without AutoMapper Service
                     //return Ok(order);
@@ -69,7 +89,7 @@ namespace DutchTreat.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]OrderViewModel model) // If tag FromBody is not given the data is tried to get from the url querystring and not from the post body
+        public async Task<IActionResult> Post([FromBody]OrderViewModel model) // If tag FromBody is not given the data is tried to get from the url querystring and not from the post body
         {
             // Add to the db
             try
@@ -91,6 +111,11 @@ namespace DutchTreat.Controllers
                     {
                         newOrder.OrderDate = DateTime.Now;
                     }
+
+                    // New orders should be assigned to a specific user
+                    // User.Identity.Name is just a claim and not the actual user object from the db; therefore we need to get it
+                    var currentUser = await _userManager.FindByNameAsync(User.Identity.Name); // due to await the method must return an async Task 
+                    newOrder.User = currentUser;
 
                     _repository.AddEntity(newOrder);
                     if (_repository.SaveAll()) // The SaveAll will safe the new order in the db, where it will gets its Id generated

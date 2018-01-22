@@ -7,8 +7,13 @@
   },
   "Logging": {
     "LogLevel": {
-      "Default":  "Information",
+      "Default": "Information",
       "Microsoft": "Warning"
     }
+  },
+  "Tokens": {
+    "Key": ";kjfuzskjkd8w3e7!jnk87!?xosao",
+    "Issuer": "localhost",
+    "Audience": "audience"
   }
 }

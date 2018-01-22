@@ -13,7 +13,8 @@ namespace DutchTreat.Data
         IEnumerable<Product> GetProductsByCategory(string category);
 
         IEnumerable<Order> GetAllOrders(bool includeitems);
-        Order GetOrderById(int id);
+        IEnumerable<Order> GetAllOrdersByUser(string username, bool includeitems);
+        Order GetOrderById(string username, int id);        
 
         bool SaveAll();
         void AddEntity(object model);

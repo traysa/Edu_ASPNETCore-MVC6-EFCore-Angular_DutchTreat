@@ -7,6 +7,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using DutchTreat.Data;
 
 namespace DutchTreat
 {
@@ -19,14 +21,32 @@ namespace DutchTreat
         public static void Main(string[] args)
         {
             // Building a webhost and start listening to requests
-            BuildWebHost(args).Run();
+            BuildHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args) // Create default builder for webhost; Creates also a default configuration file
+        //public static IWebHost BuildWebHost(string[] args) =>
+        //    WebHost.CreateDefaultBuilder(args) // Create default builder for webhost; Creates also a default configuration file
+        //        .ConfigureAppConfiguration(SetupConfiguration) // Configuration builder to add own configuration options
+        //        .UseStartup<Startup>() // Setup how to listen to web requests
+        //        .Build();
+
+        public static IWebHost BuildHost(string[] args)
+        {
+            var host = WebHost.CreateDefaultBuilder(args) // Create default builder for webhost; Creates also a default configuration file
                 .ConfigureAppConfiguration(SetupConfiguration) // Configuration builder to add own configuration options
                 .UseStartup<Startup>() // Setup how to listen to web requests
                 .Build();
+
+            // Seed the Database
+            // Requires a scope in EF Core 2 to get the Dutch Context
+            using (var scope = host.Services.CreateScope())
+            {
+                var seeder = scope.ServiceProvider.GetService<DutchSeeder>();
+                seeder.Seed().Wait(); // Make synchronize with "Wait", since we cannot make Configure method asynchronize (does not work well in the current version)
+            }
+
+            return host;
+        }
 
         /// <summary>
         /// 

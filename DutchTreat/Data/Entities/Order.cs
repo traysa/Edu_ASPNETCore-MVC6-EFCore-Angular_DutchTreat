@@ -16,5 +16,7 @@ namespace DutchTreat.Data.Entities
     // Parent-Child (1-to-many) Relationship: One Order can have many order items
     public ICollection<OrderItem> Items { get; set; }
 
+    // Store order user
+    public StoreUser User { get; set; }
   }
 }

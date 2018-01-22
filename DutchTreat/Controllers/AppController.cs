@@ -1,6 +1,7 @@
 ﻿using DutchTreat.Data;
 using DutchTreat.Services;
 using DutchTreat.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -83,6 +84,7 @@ namespace DutchTreat.Controllers
         /// Shopping page for users
         /// </summary>
         /// <returns>A view with all products</returns>
+        [Authorize] // Ensure only authenticated users can access the shop area (if Integrated Authentication is enabled, Users get authenticated via Windows credentials)
         public IActionResult Shop()
         {
             // Fluent syntax

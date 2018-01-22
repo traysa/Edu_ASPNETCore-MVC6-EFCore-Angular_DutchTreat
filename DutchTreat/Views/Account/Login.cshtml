@@ -1,0 +1,36 @@
+﻿@model LoginViewModel
+@{
+    ViewBag.Title = "Login";
+}
+<!-- To enable client-side validation, add the two jquery-validation packages to the bower file and add the according scripts to the website -->
+<!-- The section 'scripts' is defined as placeholder in the _Layout.cshtml file -->
+@section scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
+
+<div class="row"> <!-- select class row start with columns and ensure to reset any extra columns or columns above -->
+    <div class="col-md-4 col-md-offset-4"> <!-- puts the form in the middle (in a 12 column grid) -->
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-warning"></div>
+            <div class="form-group"> <!-- Allows to put label, index and input together -->
+                <label asp-for="Username">Username</label>
+                <input asp-for="Username" class="form-control"/>
+                <span asp-validation-for="Username" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password">Password</label>
+                <input asp-for="Password" type="password" class="form-control"/>
+                <span asp-validation-for="Password" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <input asp-for="RememberMe" type="checkbox" class="checkbox-inline" />
+                <label asp-for="RememberMe">Remember Me?</label>
+                <span asp-validation-for="RememberMe" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Login" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>

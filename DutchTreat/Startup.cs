@@ -12,20 +12,27 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using AutoMapper;
+using DutchTreat.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace DutchTreat
 {
     public class Startup
     {
         private readonly IConfiguration _config;
+        private readonly IHostingEnvironment _env;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="config"></param>
-        public Startup(IConfiguration config)
+        public Startup(IConfiguration config, IHostingEnvironment env)
         {
             _config = config;
+            _env = env;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -56,16 +63,45 @@ namespace DutchTreat
             services.AddTransient<IMailService, NullMailService>();
             // TODO: Support for real mail service
 
+            // By Adding the identity service, cookies are by default used
+            services.AddIdentity<StoreUser, IdentityRole>(cfg =>
+            {
+                cfg.User.RequireUniqueEmail = true;
+                //cfg.Password.RequireDigit = true;
+            })
+            .AddEntityFrameworkStores<DutchContext>(); // define type of context used internally in Identity to get the different objects that are stored in the db; Often Ideneity Context and Data context are separated, but not in this project
+
+            // Define two kinds of authentication to support: Cookies and JWT Tokens 
+            services.AddAuthentication()
+                .AddCookie()
+                .AddJwtBearer(cfg => // Setup the parameters for validating incoming tokens
+                {
+                    cfg.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidIssuer = _config["Tokens:Issuer"], // Issuer: Who created the token
+                        ValidAudience = _config["Tokens:Audience"], // Audience: Who can use the token
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Tokens:Key"]))
+                    };
+                });
+
             // Call data seeder for database
             services.AddTransient<DutchSeeder>();
-
+            
             // 
             services.AddScoped<IDutchRepository, DutchRepository>();
             //services.AddScoped<IDutchRepository, MockDutchRepository>();
 
             // ASP.NET Core requires Dependency Injection
             // Here we use the default microsoft provider for dependency injection
-            services.AddMvc() // Injects all services the MVC subsystem needs
+            services.AddMvc(opt => // Injects all services the MVC subsystem needs
+            {
+                if (_env.IsProduction())
+                {
+                    // Require Https when in Production
+                    // Can be also limited on certain controllers and actions
+                    opt.Filters.Add(new RequireHttpsAttribute());
+                }
+            }) 
                 .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore); // Trims off self-referencing objects, like produced in the GetAllOrders method in the DutchReporsitory called in the OrderControllers
         }
 
@@ -101,6 +137,10 @@ namespace DutchTreat
             // Serve static files 
             app.UseStaticFiles(); // middleware, which by default it serves static files in the wwwroot directory, which should only contain files which are allowed to serve (no configuration files etc.)
 
+            // Enable authentication and use all configurations configured in ConfigureServices
+            // Needs to be before UseMvc
+            app.UseAuthentication();
+
             // Middleware to enable MVC
             // With the MVC middleware the app is listening to requests and map them to a MVC controller            
             app.UseMvc(cfg => // Typical pattern in ASP.NET MVC core: Pass in lambda-expression to configure elements
@@ -112,16 +152,16 @@ namespace DutchTreat
                     new { controller = "App", Action = "Index" }); // Controllers
             });
 
-            if (env.IsDevelopment())
-            {
-                // Seed the Database
-                // Requires a scope in EF Core 2 to get the Dutch Context
-                using (var scope = app.ApplicationServices.CreateScope())
-                {
-                    var seeder = scope.ServiceProvider.GetService<DutchSeeder>();
-                    seeder.Seed();
-                }
-            }
+            //if (env.IsDevelopment())
+            //{
+            //    // Seed the Database
+            //    // Requires a scope in EF Core 2 to get the Dutch Context
+            //    using (var scope = app.ApplicationServices.CreateScope())
+            //    {
+            //        var seeder = scope.ServiceProvider.GetService<DutchSeeder>();
+            //        seeder.Seed().Wait(); // Make synchronize with "Wait", since we cannot make Configure method asynchronize (does not work well in the current version)
+            //    }
+            //}
         }
     }
 }

@@ -67,10 +67,10 @@ Entity Framework Core
 	- Via the context class the properties are defined which allows to querry entities in the DB table (get and add)
 - EF Core Tooling
 	- Can be added via a nuget package in the .csproj file
-	- After saving the .csproj file the NuGet package is stored and the ef tools can be used (write "dotnet ef" in cmd)
+	- After saving the .csproj file the NuGet package is stored and the ef tools can be used (write "dotnet ef" in cmd; navigate to project folder)
 	- It is required to tell the db context (DutchContext.cs), which DB provider and connection string to use
-	- With the command "dotnet ef database update" a databse should be created matching the db context in the project (DutchContext.cs)
-	- With the command "dotnet ef migrations add <Name>" a migration file is created, which contains the code, which is actually adding new tables to the empty db when executing "dotnet ef database update"
+	- With the command "dotnet ef database update"  (navigate to project folder before) a databse should be created matching the db context in the project (DutchContext.cs)
+	- With the command "dotnet ef migrations add <Name>" (navigate to project folder before) a migration file is created, which contains the code, which is actually adding new tables to the empty db when executing "dotnet ef database update" (navigate to project folder before)
 
 ---------------------------------------------------------------------------------------
 Configuration files
@@ -91,3 +91,62 @@ AutoMapper
 - Add AutoMapper support by adding it to the Service Collection i the Startup.cs
 - Create Mapping Profile (e.g. DutschMappingProfile.cs) to define mapping
 - Use mapping in the controller (e.g. OrdersController) to map between entities and their according view models
+
+---------------------------------------------------------------------------------------
+ASP.NET Core Identity
+---------------------------------------------------------------------------------------
+- Replacement for ASP.NET Membership
+- Supports more types of authentication
+	- Cookies, Open ID, OAuth2, JSON Web Tokens (JWT Tokens), etc.
+	- Cookies are easiet, but least secure
+- Pluggable
+	- How you store your identities (user entities) and which properties to store on them
+	- You can get identities (user entities) from non-relational sources or even LDAP/AD stores
+- Identities can use existing (also used for other entities) or new DbContext
+- Authorization attribute to protect views and/or APIs
+- Identity Configuration to control rules regarding Email, password etc. (see "services.AddIdentity()" in Startup.cs)
+- Use Identity for read (see get actions in OrdersController and OrderitemsController) and write (see post action in OrdersController)
+
+---------------------------------------------------------------------------------------
+Storing Identities in the database
+---------------------------------------------------------------------------------------
+- Instead DutchContext is deriving from DbContext, it is deriving from IdentityDbContext (A separate context also could have been created)
+- IdentityDbContext contains the Entity Framework Core as storage mechanism (like DBContext) plus some extra Identity functionality
+- A custom IdentityUser class is defined ("Store User"), which is deriving from IdentityUser; this allows additional properties to the IdentityUser default properties
+- The custom IdentityUser class must be given as generic parameter to IdentityDbContext, which is used by DutchContext
+- Since new entities have been added to the data model,  migrations have to be added via the console
+	- dotnet ef migrations add Identity --> Creates a new migration class called "Identity"
+	- dotnet ef database drop --> drop all existing databases, since several changes had been made (current data in the db is not used); on next startup the tables and relations are re-created with seeding
+
+---------------------------------------------------------------------------------------
+What is JSON Web Token (JWT)?
+---------------------------------------------------------------------------------------
+- See: https://jwt.io/introduction/
+- Open standard (RFC 7519) that defines a compact and self-contained way for securely transmitting information between parties as a JSON object
+- the information can be verified and trusted because it is digitally signed
+- JWTs can be signed using a secret (with the HMAC algorithm) or a public/private key pair using RSA
+- Compact: Because of their smaller size, JWTs can be sent through a URL, POST parameter, or inside an HTTP header; smaller size = transmission is fast
+- Self-contained: Payload contains required information about the user, avoiding the need to query the database more than once
+
+---------------------------------------------------------------------------------------
+Setup basic JSON Web Token (JWT)?
+---------------------------------------------------------------------------------------
+- Issuing a token
+	- Create a Post action, which can issue a token, in the account controller
+	- In the post action prepare the token specification with "new JwtSecurityToken()"
+		- claims
+		- encryption key
+		- signing credentials
+		- issue and audience (cannot be empty)
+		- expiration date
+	- In the post action create token with "new JwtSecurityTokenHandler().WriteToken(token)", where token is the token specification
+	- In the post action return a result object containing the generated token string
+	- Get the token string by calling the post action with username and password in the body
+- Validate incoming tokens
+	- Setup authentication in the Startup.cs via "services.AddAuthentication().AddJwtBearer(configureOptions)" (must be before "services.AddMvc()")
+	- Setup the parameters for validating incoming tokens in the configureOptions
+	- When sending a get request add a Header for key "Authorization" with value "Bearer <token-string>"
+- Require JWT tokens
+	- To require token for certain actions or whole controllers use the annotation "[Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]" (e.g. in OrdersController)
+	- Since no cookies are allowed then but only tokens: No redirection to Login page happens on API, instead 401 status error
+    
